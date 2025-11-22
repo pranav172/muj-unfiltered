@@ -6,6 +6,7 @@ import { auth, db } from './lib/firebase';
 import { useStore } from './store/useStore';
 import Header from './components/Header';
 import SocialFeed from './pages/SocialFeed';
+import AdminDashboard from './pages/AdminDashboard';
 import Onboarding from './components/Onboarding';
 import SignIn from './components/SignIn';
 import AdminLogin from './components/AdminLogin';
@@ -19,6 +20,7 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [browseMode, setBrowseMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -128,6 +130,10 @@ function App() {
     setShowAdminLogin(false);
   };
 
+  const toggleDashboard = () => {
+    setShowAdminDashboard(!showAdminDashboard);
+  };
+
   if (showLanding) {
     return <LandingPage onBrowse={handleBrowse} onSignup={handleSignup} onSignin={handleSignin} />;
   }
@@ -144,9 +150,20 @@ function App() {
     return <Onboarding onComplete={() => { setShowOnboarding(false); if (user) localStorage.setItem('userId', user.uid); }} />;
   }
 
+  if (showAdminDashboard && isAdmin) {
+    return (
+      <div className="min-h-screen">
+        <Header browseMode={browseMode} onSignup={handleSignup} isAdmin={isAdmin} onDashboardClick={toggleDashboard} />
+        <main className="pt-20">
+          <AdminDashboard />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 relative">
-      <Header browseMode={browseMode} onSignup={handleSignup} isAdmin={isAdmin} />
+      <Header browseMode={browseMode} onSignup={handleSignup} isAdmin={isAdmin} onDashboardClick={isAdmin ? toggleDashboard : undefined} />
       <main className="pt-20 pb-20">
         <SocialFeed browseMode={browseMode} isAdmin={isAdmin} />
       </main>

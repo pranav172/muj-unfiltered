@@ -1,10 +1,10 @@
 // src/components/Header.tsx
-import { LogOut, UserPlus, Shield } from 'lucide-react';
+import { LogOut, UserPlus, Shield, BarChart } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 
-export default function Header({ browseMode, onSignup, isAdmin }: { browseMode?: boolean; onSignup?: () => void; isAdmin?: boolean }) {
+export default function Header({ browseMode, onSignup, isAdmin, onDashboardClick }: { browseMode?: boolean; onSignup?: () => void; isAdmin?: boolean; onDashboardClick?: () => void }) {
   const { mode, setMode } = useStore();
 
   const handleRosterClick = () => {
@@ -58,6 +58,16 @@ export default function Header({ browseMode, onSignup, isAdmin }: { browseMode?:
                 roster
               </button>
             </div>
+          )}
+
+          {isAdmin && onDashboardClick && (
+            <button
+              onClick={onDashboardClick}
+              className="p-2 hover:bg-red-50 rounded-lg transition-all"
+              title="Admin Dashboard"
+            >
+              <BarChart size={18} className="text-red-500" />
+            </button>
           )}
 
           <button
