@@ -1,6 +1,6 @@
 // src/components/PostCard.tsx
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, Flag, Trash2 } from 'lucide-react';
 import { doc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { BAD_WORDS } from '../lib/constants';
@@ -68,10 +68,15 @@ export default function PostCard({ post, currentUserId, onOpen }: any) {
       </p>
 
       <div className="flex items-center gap-6">
-        <button onClick={(e) => { e.stopPropagation(); handleLike(); }} className="flex items-center gap-2 text-pink-400 font-bold">
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => { e.stopPropagation(); handleLike(); }} 
+          className="flex items-center gap-2 text-pink-400 font-bold"
+        >
           <Heart className="w-5 h-5" fill="currentColor" />
           <span>{post.likes || 0}</span>
-        </button>
+        </motion.button>
         <div className="flex items-center gap-2 text-cyan-400 font-bold">
           <MessageCircle className="w-5 h-5" />
           <span>{post.comments?.length || 0}</span>
