@@ -8,6 +8,7 @@ import Header from './components/Header';
 import SocialFeed from './pages/SocialFeed';
 import Onboarding from './components/Onboarding';
 import SignIn from './components/SignIn';
+import AdminLogin from './components/AdminLogin';
 import LandingPage from './components/LandingPage';
 import Footer from './components/Footer';
 import { cleanupOldPosts } from './lib/cleanupPosts';
@@ -17,12 +18,19 @@ function App() {
   const [showLanding, setShowLanding] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [browseMode, setBrowseMode] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem('hasVisited');
     const savedBrowseMode = localStorage.getItem('browseMode');
     const savedUserId = localStorage.getItem('userId');
+    const adminStatus = localStorage.getItem('isAdmin');
+    
+    if (adminStatus === 'true') {
+      setIsAdmin(true);
+    }
     
     if (hasVisited === 'true') {
       setShowLanding(false);
@@ -98,18 +106,38 @@ function App() {
     setShowSignIn(false);
   };
 
+  const handleAdminClick = () => {
+    setShowAdminLogin(true);
+    setShowSignIn(false);
+  };
+
+  const handleAdminSuccess = () => {
+    setIsAdmin(true);
+    setShowAdminLogin(false);
+  };
+
   const handleBackToLanding = () => {
     setShowLanding(true);
     setShowSignIn(false);
     setShowOnboarding(false);
+    setShowAdminLogin(false);
+  };
+
+  const handleBackToSignIn = () => {
+    setShowSignIn(true);
+    setShowAdminLogin(false);
   };
 
   if (showLanding) {
     return <LandingPage onBrowse={handleBrowse} onSignup={handleSignup} onSignin={handleSignin} />;
   }
 
+  if (showAdminLogin) {
+    return <AdminLogin onSuccess={handleAdminSuccess} onBack={handleBackToSignIn} />;
+  }
+
   if (showSignIn) {
-    return <SignIn onSuccess={handleSignInSuccess} onBack={handleBackToLanding} />;
+    return <SignIn onSuccess={handleSignInSuccess} onBack={handleBackToLanding} onAdminClick={handleAdminClick} />;
   }
 
   if (showOnboarding && !browseMode) {
@@ -118,9 +146,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 relative">
-      <Header browseMode={browseMode} onSignup={handleSignup} />
+      <Header browseMode={browseMode} onSignup={handleSignup} isAdmin={isAdmin} />
       <main className="pt-20 pb-20">
-        <SocialFeed browseMode={browseMode} />
+        <SocialFeed browseMode={browseMode} isAdmin={isAdmin} />
       </main>
       <Footer />
     </div>

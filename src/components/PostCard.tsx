@@ -1,12 +1,15 @@
 // src/components/PostCard.tsx
 import { motion } from 'framer-motion';
-import { User, Heart, MessageCircle, Lock } from 'lucide-react';
+import { User, Heart, MessageCircle, Lock, Trash2 } from 'lucide-react';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface PostCardProps {
   post: any;
   currentUserId: string | null;
   onOpen: (post: any) => void;
   browseMode?: boolean;
+  isAdmin?: boolean;
 }
 
 const cardGradients = [
@@ -27,10 +30,17 @@ const avatarGradients = [
   'from-pink-500 to-rose-500',
 ];
 
-export default function PostCard({ post, onOpen, browseMode }: PostCardProps) {
+export default function PostCard({ post, onOpen, browseMode, isAdmin }: PostCardProps) {
   const colorIndex = Math.abs(post.id.charCodeAt(0)) % cardGradients.length;
   const cardGradient = cardGradients[colorIndex];
   const avatarGradient = avatarGradients[colorIndex];
+  
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('yo admin! delete this confession? 🗑️')) {
+      await deleteDoc(doc(db, 'posts', post.id));
+    }
+  };
   
   return (
     <motion.div
@@ -38,7 +48,7 @@ export default function PostCard({ post, onOpen, browseMode }: PostCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={browseMode ? {} : { y: -4, scale: 1.02 }}
       onClick={browseMode ? undefined : () => onOpen(post)}
-      className={`bg-gradient-to-br ${cardGradient} rounded-2xl p-5 border border-white/50 transition-all duration-200 h-full ${browseMode ? 'opacity-90' : 'cursor-pointer hover:shadow-xl'}`}
+      className={`bg-gradient-to-br ${cardGradient} rounded-2xl p-5 border border-white/50 transition-all duration-200 h-full ${browseMode ? 'opacity-90' : 'cursor-pointer hover:shadow-xl'} ${isAdmin ? 'ring-2 ring-red-200' : ''}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -50,9 +60,17 @@ export default function PostCard({ post, onOpen, browseMode }: PostCardProps) {
             <p className="text-xs text-gray-600">{post.timeAgo}</p>
           </div>
         </div>
-        {browseMode && (
-          <div className="opacity-50">
-            <Lock size={16} className="text-gray-600" />
+        {(browseMode || isAdmin) && (
+          <div className="flex items-center gap-2">
+            {browseMode && <Lock size={16} className="text-gray-600 opacity-50" />}
+            {isAdmin && (
+              <button
+                onClick={handleDelete}
+                className="p-1.5 bg-red-500/20 hover:bg-red-500/40 rounded-lg transition-all"
+              >
+                <Trash2 size={14} className="text-red-600" />
+              </button>
+            )}
           </div>
         )}
       </div>

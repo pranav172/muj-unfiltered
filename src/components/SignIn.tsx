@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Sparkles, LogIn, AlertCircle } from 'lucide-react';
+import { Sparkles, LogIn, AlertCircle, Shield } from 'lucide-react';
 
-export default function SignIn({ onSuccess, onBack }: { onSuccess: (userId: string) => void; onBack: () => void }) {
+export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess: (userId: string) => void; onBack: () => void; onAdminClick: () => void }) {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [question, setQuestion] = useState('');
@@ -44,6 +44,7 @@ export default function SignIn({ onSuccess, onBack }: { onSuccess: (userId: stri
       setUserId(userDoc.id);
       setStep(2);
     } catch (err) {
+      console.error('Sign in error:', err);
       setError('something went wrong... try again?');
     }
 
@@ -57,17 +58,31 @@ export default function SignIn({ onSuccess, onBack }: { onSuccess: (userId: stri
     setError('');
 
     try {
-      const userDoc = await getDocs(query(collection(db, 'users'), where('email', '==', email.trim().toLowerCase())));
-      const userData = userDoc.docs[0].data();
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email.trim().toLowerCase()));
+      const snapshot = await getDocs(q);
+      
+      if (!snapshot.empty) {
+        const userData = snapshot.docs[0].data();
+        const storedAnswer = userData.funAnswer.toLowerCase().trim();
+        const userAnswer = answer.toLowerCase().trim();
 
-      // Check if answer matches (case insensitive)
-      if (userData.funAnswer.toLowerCase() === answer.trim().toLowerCase()) {
-        onSuccess(userId);
+        console.log('Stored answer:', storedAnswer);
+        console.log('User answer:', userAnswer);
+        console.log('Match:', storedAnswer === userAnswer);
+
+        if (storedAnswer === userAnswer) {
+          // Success - pass the Firebase UID
+          onSuccess(snapshot.docs[0].id);
+        } else {
+          setError('wrong answer bestie! try again or sign up fresh 🤔');
+          setAnswer('');
+        }
       } else {
-        setError('wrong answer bestie! try again or sign up fresh 🤔');
-        setAnswer('');
+        setError('account not found... this is weird 🤨');
       }
     } catch (err) {
+      console.error('Sign in verification error:', err);
       setError('something went wrong... try again?');
     }
 
@@ -78,8 +93,17 @@ export default function SignIn({ onSuccess, onBack }: { onSuccess: (userId: stri
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex-center flex-col px-8 text-center"
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex-center flex-col px-8 text-center relative"
     >
+      {/* Cheeky Admin Button */}
+      <button
+        onClick={onAdminClick}
+        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-200/50 hover:bg-purple-500/20 transition-all opacity-30 hover:opacity-100"
+        title="👀"
+      >
+        <Shield size={16} className="mx-auto text-gray-400" />
+      </button>
+
       <motion.div
         initial={{ y: -50, scale: 0.9 }}
         animate={{ y: 0, scale: 1 }}

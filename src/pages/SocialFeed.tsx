@@ -1,6 +1,6 @@
 // src/pages/SocialFeed.tsx — WITH BROWSE MODE
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import { Plus, User, X, Eye } from 'lucide-react';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 
-export default function SocialFeed({ browseMode }: { browseMode?: boolean }) {
+export default function SocialFeed({ browseMode, isAdmin }: { browseMode?: boolean; isAdmin?: boolean }) {
   const { user } = useStore();
   const [posts, setPosts] = useState<any[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -117,6 +117,7 @@ export default function SocialFeed({ browseMode }: { browseMode?: boolean }) {
                   currentUserId={user?.uid || null}
                   onOpen={setSelectedPost}
                   browseMode={browseMode}
+                  isAdmin={isAdmin}
                 />
               ))}
             </AnimatePresence>

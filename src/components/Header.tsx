@@ -1,10 +1,10 @@
 // src/components/Header.tsx
-import { LogOut, UserPlus } from 'lucide-react';
+import { LogOut, UserPlus, Shield } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 
-export default function Header({ browseMode, onSignup }: { browseMode?: boolean; onSignup?: () => void }) {
+export default function Header({ browseMode, onSignup, isAdmin }: { browseMode?: boolean; onSignup?: () => void; isAdmin?: boolean }) {
   const { mode, setMode } = useStore();
 
   const handleRosterClick = () => {
@@ -14,6 +14,8 @@ export default function Header({ browseMode, onSignup }: { browseMode?: boolean;
   const handleLogout = async () => {
     await signOut(auth);
     localStorage.removeItem('hasVisited');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('userId');
     window.location.reload();
   };
 
@@ -24,6 +26,12 @@ export default function Header({ browseMode, onSignup }: { browseMode?: boolean;
           <h1 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             muj unfiltered
           </h1>
+          {isAdmin && (
+            <div className="px-3 py-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-full text-xs font-bold text-white flex items-center gap-1">
+              <Shield size={12} />
+              <span>ADMIN</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
