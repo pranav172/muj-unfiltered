@@ -1,85 +1,95 @@
 // src/components/PostCard.tsx
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Flag, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Flag, Trash2, Ghost, User } from 'lucide-react';
 import { doc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { BAD_WORDS } from '../lib/constants';
 
-const filterText = (text: string) => {
-  let filtered = text;
-  BAD_WORDS.forEach(word => {
-    const regex = new RegExp(word, 'gi');
-    filtered = filtered.replace(regex, '****');
-  });
-  return filtered;
-};
+interface PostCardProps {
+  post: any;
+  currentUserId: string | null;
+  onOpen: (post: any) => void;
+  isLiked: boolean;
+  onLike: () => void;
+}
 
-export default function PostCard({ post, currentUserId, onOpen }: any) {
+export default function PostCard({ post, currentUserId, onOpen, isLiked, onLike }: PostCardProps) {
   const isOwner = post.ownerId === currentUserId;
 
-  const handleLike = async () => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onLike();
     await updateDoc(doc(db, 'posts', post.id), { likes: increment(1) });
   };
 
-  const handleDelete = async () => {
-    if (confirm('Delete this yap forever?')) {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('Delete this yap?')) {
       await deleteDoc(doc(db, 'posts', post.id));
     }
-  };
-
-  const handleReport = () => {
-    alert('Reported! Mods will check in <5 mins');
-    // In real app: send to your Telegram bot
   };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
       onClick={() => onOpen(post)}
-      className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 cursor-pointer group relative overflow-hidden hover:ring-2 hover:ring-purple-400/50 transition-all"
+      className="glass-hard rounded-3xl p-6 cursor-pointer group relative overflow-hidden border border-white/10 hover:border-purple-400/50 transition-all duration-300"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-black text-white">
-            {post.isAnon ? 'Ghost' : 'Face'}
+      {/* Gradient glow on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-11 h-11 rounded-full flex-center font-black text-white shadow-lg ${post.isAnon ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-gradient-to-br from-pink-500 to-rose-600'}`}>
+              {post.isAnon ? <Ghost size={22} /> : <User size={22} />}
+            </div>
+            <div>
+              <p className="font-bold text-lg">{post.isAnon ? 'Anon' : 'Verified'}</p>
+              <p className="text-xs text-gray-400">{post.timeAgo}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-white">{post.isAnon ? 'Anon' : 'Verified'}</p>
-            <p className="text-xs text-gray-400">{post.timeAgo}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+
           {isOwner && (
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(); }} className="p-2 bg-red-500/20 rounded-xl">
-              <Trash2 className="w-4 h-4 text-red-400" />
+            <button
+              onClick={handleDelete}
+              className="opacity-0 group-hover:opacity-100 transition p-2 bg-red-500/20 rounded-xl hover:bg-red-500/40"
+            >
+              <Trash2 size={18} className="text-red-400" />
             </button>
           )}
-          <button onClick={(e) => { e.stopPropagation(); handleReport(); }} className="p-2 bg-yellow-500/20 rounded-xl">
-            <Flag className="w-4 h-4 text-yellow-400" />
-          </button>
         </div>
-      </div>
 
-      <p className="text-white/90 font-medium leading-relaxed mb-6 text-lg">
-        {filterText(post.text)}
-      </p>
+        <p className="text-white/90 text-lg leading-relaxed mb-6 font-medium">{post.text}</p>
 
-      <div className="flex items-center gap-6">
-        <motion.button 
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={(e) => { e.stopPropagation(); handleLike(); }} 
-          className="flex items-center gap-2 text-pink-400 font-bold"
-        >
-          <Heart className="w-5 h-5" fill="currentColor" />
-          <span>{post.likes || 0}</span>
-        </motion.button>
-        <div className="flex items-center gap-2 text-cyan-400 font-bold">
-          <MessageCircle className="w-5 h-5" />
-          <span>{post.comments?.length || 0}</span>
+        <div className="flex items-center gap-6">
+          <motion.button
+            whileTap={{ scale: 1.4 }}
+            onClick={handleLike}
+            className={`flex items-center gap-2 font-bold text-lg ${isLiked ? 'text-pink-500' : 'text-white/50'} transition-all`}
+          >
+            <motion.div
+              animate={{ scale: isLiked ? [1, 1.3, 1] : 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Heart size={24} fill={isLiked ? 'currentColor' : 'none'} />
+            </motion.div>
+            <span>{post.likes || 0}</span>
+          </motion.button>
+
+          <button className="flex items-center gap-2 text-cyan-400 font-bold text-lg">
+            <MessageCircle size={24} />
+            <span>{post.comments?.length || 0}</span>
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); alert('Reported!'); }}
+            className="ml-auto p-2 opacity-0 group-hover:opacity-100 transition hover:bg-yellow-500/20 rounded-xl"
+          >
+            <Flag size={18} className="text-yellow-400" />
+          </button>
         </div>
       </div>
     </motion.div>

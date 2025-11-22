@@ -1,30 +1,23 @@
-// src/pages/SocialFeed.tsx — FINAL WORKING VERSION
+// src/pages/SocialFeed.tsx — FINAL WITH INTERACTIONS
 import { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Ghost, User, Send, X, Crown, Heart, MessageCircle, Flag, Trash2 } from 'lucide-react';
+import { Plus, Ghost, User, X, Crown, Send } from 'lucide-react';
 import { BAD_WORDS, UPI_ID, PAY_AMOUNT } from '../lib/constants';
-
-const timeSince = (ts: any) => {
-  if (!ts) return 'now';
-  const sec = Math.floor((Date.now() - ts.toDate()) / 1000);
-  if (sec < 60) return `${sec}s`;
-  if (sec < 3600) return `${Math.floor(sec/60)}m`;
-  if (sec < 86400) return `${Math.floor(sec/3600)}h`;
-  return `${Math.floor(sec/86400)}d`;
-};
+import PostCard from '../components/PostCard';
 
 export default function SocialFeed() {
   const { user } = useStore();
   const [posts, setPosts] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
-  // Real-time feed
   useEffect(() => {
     if (!user) return;
     const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
@@ -38,6 +31,15 @@ export default function SocialFeed() {
     });
     return () => unsub();
   }, [user]);
+
+  const timeSince = (ts: any) => {
+    if (!ts) return 'now';
+    const sec = Math.floor((Date.now() - ts.toDate()) / 1000);
+    if (sec < 60) return `${sec}s`;
+    if (sec < 3600) return `${Math.floor(sec/60)}m`;
+    if (sec < 86400) return `${Math.floor(sec/3600)}h`;
+    return `${Math.floor(sec/86400)}d`;
+  };
 
   const handlePost = async () => {
     if (!text.trim() || !user) return;
@@ -79,63 +81,38 @@ export default function SocialFeed() {
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 pb-32">
-        {/* Feed */}
         {posts.length === 0 ? (
           <div className="text-center pt-32">
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-8xl mb-8">Dead Chat</motion.div>
-            <p className="text-xl text-gray-400">Be the first to yap</p>
+            <motion.h1 initial={{ scale: 0 }} animate={{ scale:1 }} className="text-8xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Dead silent...
+            </motion.h1>
+            <p className="text-xl text-gray-400 mt-6">Be the first to yap</p>
           </div>
         ) : (
-          <div className="columns-2 md:columns-3 gap-5">
+          <div className="columns-2 md:columns-3 gap-6">
             <AnimatePresence>
               {posts.map(post => (
-                <motion.div
-                  key={post.id}
-                  layout
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="mb-5 break-inside-avoid"
-                >
-                  <div className="glass-hard rounded-3xl p-6 border border-white/10 hover:border-purple-500/50 transition-all">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex-center font-black text-white ${post.isAnon ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-gradient-to-br from-pink-500 to-rose-600'}`}>
-                          {post.isAnon ? <Ghost size={20} /> : <User size={20} />}
-                        </div>
-                        <div className="ml-3">
-                          <p className="font-bold">{post.isAnon ? 'Anon' : 'Verified'}</p>
-                          <p className="text-xs text-gray-400">{post.timeAgo}</p>
-                        </div>
-                      </div>
-                      {post.ownerId === user?.uid && (
-                        <button onClick={() => deleteDoc(doc(db, 'posts', post.id))} className="text-red-400 hover:scale-110">
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-white/90 text-lg leading-relaxed mb-5">{post.text}</p>
-                    <div className="flex gap-6 text-sm">
-                      <button className="flex items-center gap-2 text-pink-400 font-bold">
-                        <Heart size={20} fill="currentColor" /> {post.likes || 0}
-                      </button>
-                      <div className="flex items-center gap-2 text-cyan-400 font-bold">
-                        <MessageCircle size={20} /> {post.comments?.length || 0}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                <div key={post.id} className="mb-6 break-inside-avoid">
+                  <PostCard
+                    post={post}
+                    currentUserId={user?.uid || null}
+                    onOpen={setSelectedPost}
+                    isLiked={likedPosts.has(post.id)}
+                    onLike={() => setLikedPosts(prev => new Set(prev).add(post.id))}
+                  />
+                </div>
               ))}
             </AnimatePresence>
           </div>
         )}
       </div>
 
-      {/* Floating + Button */}
+      {/* FAB */}
       <motion.button
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9, rotate: 90 }}
         onClick={() => setShowModal(true)}
-        className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-center shadow-2xl shadow-purple-500/50 z-40"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-center shadow-2xl shadow-purple-500/60 z-40"
       >
         <Plus className="w-8 h-8" />
       </motion.button>
