@@ -7,6 +7,7 @@ import { useStore } from './store/useStore';
 import Header from './components/Header';
 import SocialFeed from './pages/SocialFeed';
 import Onboarding from './components/Onboarding';
+import { cleanupOldPosts } from './lib/cleanupPosts';
 
 function App() {
   const { setUser } = useStore();
@@ -25,6 +26,25 @@ function App() {
     });
     return () => unsub();
   }, [setUser]);
+
+  // Run cleanup once when app loads
+  useEffect(() => {
+    const runCleanup = async () => {
+      // Check if cleanup was run today
+      const lastCleanup = localStorage.getItem('lastCleanup');
+      const today = new Date().toDateString();
+      
+      if (lastCleanup !== today) {
+        console.log('Running daily cleanup...');
+        await cleanupOldPosts();
+        localStorage.setItem('lastCleanup', today);
+      }
+    };
+
+    // Run cleanup after 5 seconds (so it doesn't slow down initial load)
+    const timer = setTimeout(runCleanup, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (showOnboarding) return <Onboarding onComplete={() => setShowOnboarding(false)} />;
 
