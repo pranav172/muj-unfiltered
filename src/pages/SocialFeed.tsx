@@ -1,6 +1,6 @@
-// src/pages/SocialFeed.tsx — COLORFUL MINIMAL VERSION
+// src/pages/SocialFeed.tsx — FIXED LAYOUT & VALIDATION
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,7 @@ export default function SocialFeed() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(true);
+  const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -38,8 +39,32 @@ export default function SocialFeed() {
     return `${Math.floor(sec/86400)}d`;
   };
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    if (newText.length <= 280) {
+      setText(newText);
+      setCharCount(newText.length);
+    }
+  };
+
   const handlePost = async () => {
     if (!text.trim() || !user) return;
+    
+    // Validation
+    if (text.trim().length < 10) {
+      alert('confession must be at least 10 characters');
+      return;
+    }
+
+    // Check for spam (same text posted recently)
+    const userRef = doc(db, 'users', user.uid);
+    const snap = await getDoc(userRef);
+    const lastPost = snap.data()?.lastPostText;
+    
+    if (lastPost === text.trim()) {
+      alert('you already posted this! try something new');
+      return;
+    }
     
     await addDoc(collection(db, 'posts'), {
       text: text.trim(),
@@ -49,14 +74,26 @@ export default function SocialFeed() {
       comments: [],
       createdAt: serverTimestamp()
     });
+
+    // Save last post to prevent spam
+    await getDoc(userRef).then(async (docSnap) => {
+      if (docSnap.exists()) {
+        const { updateDoc } = await import('firebase/firestore');
+        await updateDoc(userRef, { lastPostText: text.trim() });
+      } else {
+        const { setDoc } = await import('firebase/firestore');
+        await setDoc(userRef, { lastPostText: text.trim() });
+      }
+    });
     
     setText('');
+    setCharCount(0);
     setShowCreateModal(false);
   };
 
   return (
-    <>
-      <div className="max-w-4xl mx-auto px-4 pb-32">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         {posts.length === 0 ? (
           <div className="text-center pt-32">
             <motion.h1 initial={{ scale: 0.95 }} animate={{ scale:1 }} className="text-5xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
@@ -65,16 +102,15 @@ export default function SocialFeed() {
             <p className="text-base text-gray-400">be the first to share</p>
           </div>
         ) : (
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence>
               {posts.map(post => (
-                <div key={post.id} className="mb-4 break-inside-avoid">
-                  <PostCard
-                    post={post}
-                    currentUserId={user?.uid || null}
-                    onOpen={setSelectedPost}
-                  />
-                </div>
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUserId={user?.uid || null}
+                  onOpen={setSelectedPost}
+                />
               ))}
             </AnimatePresence>
           </div>
@@ -117,13 +153,18 @@ export default function SocialFeed() {
 
               <textarea
                 value={text}
-                onChange={e => setText(e.target.value)}
-                placeholder="what's on your mind?"
+                onChange={handleTextChange}
+                placeholder="what's on your mind? (min 10 characters)"
                 className="w-full h-32 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-[15px]"
-                maxLength={280}
               />
 
-              <div className="flex justify-between items-center mt-5">
+              <div className="flex justify-between items-center mt-2 mb-5">
+                <span className={`text-sm ${charCount < 10 ? 'text-red-400' : charCount > 250 ? 'text-orange-400' : 'text-gray-400'}`}>
+                  {charCount}/280 {charCount < 10 && '(min 10)'}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
                 <button
                   onClick={() => setIsAnon(!isAnon)}
                   className={`px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all ${isAnon ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
@@ -134,7 +175,7 @@ export default function SocialFeed() {
 
                 <button
                   onClick={handlePost}
-                  disabled={!text.trim()}
+                  disabled={!text.trim() || charCount < 10}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-2.5 rounded-xl font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-md transition-all"
                 >
                   post
@@ -154,6 +195,6 @@ export default function SocialFeed() {
           />
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

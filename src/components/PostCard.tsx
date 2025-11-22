@@ -22,12 +22,11 @@ export default function PostCard({ post, onOpen }: PostCardProps) {
   
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, scale: 1.01 }}
+      whileHover={{ y: -4, scale: 1.02 }}
       onClick={() => onOpen(post)}
-      className="bg-white rounded-2xl p-5 cursor-pointer border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200"
+      className="bg-white rounded-2xl p-5 cursor-pointer border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200 h-full"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className={`w-9 h-9 rounded-full flex-center bg-gradient-to-br ${gradient} text-white shadow-sm`}>

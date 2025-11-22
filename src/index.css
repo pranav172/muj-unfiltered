@@ -1,7 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
@@ -14,5 +11,9 @@ body {
 }
 
 @layer components {
-  .flex-center { @apply flex items-center justify-center; }
+  .flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
