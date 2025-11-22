@@ -1,0 +1,21 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Outfit"', 'system-ui', 'sans-serif'],
+      },
+      backdropBlur: {
+        xs: '2px',
+      }
+    },
+  },
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: ["dark"],
+  },
+}
