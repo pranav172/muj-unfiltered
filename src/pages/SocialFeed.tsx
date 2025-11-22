@@ -95,7 +95,7 @@ export default function SocialFeed({ browseMode }: { browseMode?: boolean }) {
           <div className="mb-6 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 rounded-2xl p-4 flex items-center gap-3">
             <Eye className="w-5 h-5 text-purple-600" />
             <p className="text-sm text-purple-900">
-              <span className="font-semibold">lurking mode activated</span> — sign up to post your own confessions 👀
+              <span className="font-semibold">lurking mode 👀</span> — you can only view confessions. sign up to post & interact!
             </p>
           </div>
         )}
@@ -116,6 +116,7 @@ export default function SocialFeed({ browseMode }: { browseMode?: boolean }) {
                   post={post}
                   currentUserId={user?.uid || null}
                   onOpen={setSelectedPost}
+                  browseMode={browseMode}
                 />
               ))}
             </AnimatePresence>
@@ -194,9 +195,9 @@ export default function SocialFeed({ browseMode }: { browseMode?: boolean }) {
         )}
       </AnimatePresence>
 
-      {/* Post Detail Modal */}
+      {/* Post Detail Modal - Only when NOT in browse mode */}
       <AnimatePresence>
-        {selectedPost && (
+        {selectedPost && !browseMode && (
           <PostModal
             post={selectedPost}
             onClose={() => setSelectedPost(null)}

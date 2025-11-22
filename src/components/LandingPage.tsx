@@ -1,8 +1,8 @@
 // src/components/LandingPage.tsx
 import { motion } from 'framer-motion';
-import { Eye, UserPlus, Sparkles, Shield, Ghost } from 'lucide-react';
+import { Eye, UserPlus, LogIn, Sparkles, Shield, Ghost } from 'lucide-react';
 
-export default function LandingPage({ onBrowse, onSignup }: { onBrowse: () => void; onSignup: () => void }) {
+export default function LandingPage({ onBrowse, onSignup, onSignin }: { onBrowse: () => void; onSignup: () => void; onSignin: () => void }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex-center p-4">
       <motion.div
@@ -52,7 +52,7 @@ export default function LandingPage({ onBrowse, onSignup }: { onBrowse: () => vo
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="space-y-4"
+          className="space-y-3"
         >
           <button
             onClick={onSignup}
@@ -66,14 +66,25 @@ export default function LandingPage({ onBrowse, onSignup }: { onBrowse: () => vo
           </button>
 
           <button
-            onClick={onBrowse}
-            className="w-full bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 py-5 rounded-2xl font-bold text-lg hover:bg-gray-50 hover:scale-105 transition-all duration-200"
+            onClick={onSignin}
+            className="w-full bg-white/90 backdrop-blur-sm border-2 border-purple-200 text-gray-700 py-5 rounded-2xl font-bold text-lg hover:bg-purple-50 hover:scale-105 transition-all duration-200"
           >
             <div className="flex items-center justify-center gap-2">
-              <Eye size={24} />
+              <LogIn size={24} className="text-purple-600" />
+              <span>sign in</span>
+            </div>
+            <p className="text-sm text-gray-500 font-normal mt-1">already got an account? let's go</p>
+          </button>
+
+          <button
+            onClick={onBrowse}
+            className="w-full bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 py-4 rounded-2xl font-medium text-base hover:bg-gray-50 hover:scale-105 transition-all duration-200"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Eye size={20} />
               <span>just lurk for now</span>
             </div>
-            <p className="text-sm text-gray-500 font-normal mt-1">browse without posting</p>
+            <p className="text-xs text-gray-500 font-normal mt-1">view only, no posting</p>
           </button>
         </motion.div>
 
