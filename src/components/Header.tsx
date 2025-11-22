@@ -1,15 +1,15 @@
 // src/components/Header.tsx
-import { Flame, Sparkles } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export default function Header() {
   const { mode, setMode, streak } = useStore();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-hard border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-2xl border-b border-white/20">
       <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between items-center">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center neon-glow">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20">
             <span className="text-3xl">✨</span>
           </div>
           <div>
@@ -21,12 +21,12 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2 bg-orange-500/10 px-4 py-2 rounded-full border border-orange-400/30 neon-glow">
+          <div className="flex items-center gap-2 bg-orange-500/10 px-4 py-2 rounded-full border border-orange-400/30 shadow-lg shadow-purple-500/20">
             <Flame className="w-5 h-5 text-orange-400" fill="currentColor" />
             <span className="text-lg font-black text-orange-300 font-display">{streak}</span>
           </div>
 
-          <div className="glass px-2 py-1.5 rounded-2xl flex">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 px-2 py-1.5 rounded-2xl flex">
             <button
               onClick={() => setMode('social')}
               className={`px-6 py-2.5 rounded-2xl font-bold text-sm transition-all ${mode === 'social' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' : 'text-gray-400'}`}
