@@ -1,7 +1,7 @@
 // src/pages/AdminDashboard.tsx
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, getDocs, deleteDoc, doc, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Shield, Users, MessageSquare, TrendingUp, Trash2, Database, AlertTriangle } from 'lucide-react';
 
@@ -11,7 +11,7 @@ export default function AdminDashboard() {
     totalPosts: 0,
     totalLikes: 0,
     totalComments: 0,
-    avgPostsPerUser: 0,
+    avgPostsPerUser: '0',
   });
   
   const [users, setUsers] = useState<any[]>([]);
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
 
       // Fetch all posts
       const postsSnapshot = await getDocs(collection(db, 'posts'));
-      const postsData = postsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const postsData: any[] = postsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       setPosts(postsData);
 
       // Get top posts (most liked)
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
         totalPosts: postsData.length,
         totalLikes,
         totalComments,
-        avgPostsPerUser: usersData.length > 0 ? (postsData.length / usersData.length).toFixed(1) : 0,
+        avgPostsPerUser: usersData.length > 0 ? (postsData.length / usersData.length).toFixed(1) : '0',
       });
     } catch (error) {
       console.error('Error loading dashboard:', error);
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
               Key Insights
             </h3>
             <div className="space-y-3">
-              <Insight label="Avg posts per user" value={stats.avgPostsPerUser.toString()} />
+              <Insight label="Avg posts per user" value={stats.avgPostsPerUser} />
               <Insight label="Engagement rate" value={`${((stats.totalLikes + stats.totalComments) / stats.totalPosts * 100 || 0).toFixed(1)}%`} />
               <Insight label="Avg likes per post" value={(stats.totalLikes / stats.totalPosts || 0).toFixed(1)} />
               <Insight label="Avg comments per post" value={(stats.totalComments / stats.totalPosts || 0).toFixed(1)} />
