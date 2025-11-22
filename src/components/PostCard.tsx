@@ -8,7 +8,18 @@ interface PostCardProps {
   onOpen: (post: any) => void;
 }
 
+const gradients = [
+  'from-purple-500 to-pink-500',
+  'from-blue-500 to-cyan-500',
+  'from-orange-500 to-red-500',
+  'from-green-500 to-emerald-500',
+  'from-indigo-500 to-purple-500',
+  'from-pink-500 to-rose-500',
+];
+
 export default function PostCard({ post, onOpen }: PostCardProps) {
+  const gradient = gradients[Math.abs(post.id.charCodeAt(0)) % gradients.length];
+  
   return (
     <motion.div
       layout
@@ -16,10 +27,10 @@ export default function PostCard({ post, onOpen }: PostCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2, scale: 1.01 }}
       onClick={() => onOpen(post)}
-      className="bg-white rounded-2xl p-5 cursor-pointer border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200"
+      className="bg-white rounded-2xl p-5 cursor-pointer border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200"
     >
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-9 h-9 rounded-full flex-center bg-gray-100 text-gray-600">
+        <div className={`w-9 h-9 rounded-full flex-center bg-gradient-to-br ${gradient} text-white shadow-sm`}>
           <User size={16} />
         </div>
         <div>

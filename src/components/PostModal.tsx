@@ -5,9 +5,19 @@ import { useState } from 'react';
 import { doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
+const gradients = [
+  'from-purple-500 to-pink-500',
+  'from-blue-500 to-cyan-500',
+  'from-orange-500 to-red-500',
+  'from-green-500 to-emerald-500',
+  'from-indigo-500 to-purple-500',
+  'from-pink-500 to-rose-500',
+];
+
 export default function PostModal({ post, onClose }: { post: any; onClose: () => void }) {
   const [comment, setComment] = useState('');
   const [liked, setLiked] = useState(false);
+  const gradient = gradients[Math.abs(post.id.charCodeAt(0)) % gradients.length];
 
   const handleLike = async () => {
     setLiked(!liked);
@@ -44,7 +54,7 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
         <div className="p-6">
           <div className="flex justify-between items-start mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full flex-center bg-gray-100 text-gray-600">
+              <div className={`w-11 h-11 rounded-full flex-center bg-gradient-to-br ${gradient} text-white shadow-sm`}>
                 <User size={20} />
               </div>
               <div>
@@ -63,7 +73,7 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
             <motion.button
               whileTap={{ scale: liked ? 0.9 : 1.2 }}
               onClick={handleLike}
-              className={`flex items-center gap-2 text-base font-medium transition-colors ${liked ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center gap-2 text-base font-medium transition-colors ${liked ? 'text-pink-500' : 'text-gray-400 hover:text-pink-400'}`}
             >
               <Heart size={24} fill={liked ? 'currentColor' : 'none'} />
               <span>{(post.likes || 0) + (liked ? 1 : 0)}</span>
@@ -85,9 +95,9 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder="add a comment..."
-              className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 border border-gray-100 text-[15px]"
+              className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 border border-gray-100 text-[15px]"
             />
-            <button onClick={handleComment} className="bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-800 transition-colors">
+            <button onClick={handleComment} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3 rounded-2xl hover:shadow-md transition-all">
               <Send size={18} />
             </button>
           </div>

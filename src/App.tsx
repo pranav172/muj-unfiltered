@@ -29,7 +29,7 @@ function App() {
   if (showOnboarding) return <Onboarding onComplete={() => setShowOnboarding(false)} />;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] relative">
+    <div className="min-h-screen bg-white relative">
       <Header />
       <main className="pt-20 pb-32">
         <SocialFeed />

@@ -17,10 +17,10 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             muj unfiltered
           </h1>
         </div>
@@ -29,7 +29,7 @@ export default function Header() {
           <div className="bg-gray-50 px-2 py-1.5 rounded-xl flex gap-1">
             <button
               onClick={() => setMode('social')}
-              className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${mode === 'social' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-900'}`}
+              className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${mode === 'social' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
             >
               yap
             </button>
