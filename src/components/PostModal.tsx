@@ -10,8 +10,8 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
   const [liked, setLiked] = useState(false);
 
   const handleLike = async () => {
-    setLiked(true);
-    await updateDoc(doc(db, 'posts', post.id), { likes: increment(1) });
+    setLiked(!liked);
+    await updateDoc(doc(db, 'posts', post.id), { likes: increment(liked ? -1 : 1) });
   };
 
   const handleComment = async () => {
@@ -31,62 +31,64 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex-center bg-black/80 backdrop-blur-xl"
+      className="fixed inset-0 z-50 flex-center bg-black/20 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.8, y: 100 }}
+        initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.8, y: 100 }}
+        exit={{ scale: 0.9, y: 20 }}
         onClick={e => e.stopPropagation()}
-        className="glass-hard rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-white/20"
+        className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 shadow-xl"
       >
-        <div className="p-8">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-full flex-center text-white font-black ${post.isAnon ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-gradient-to-br from-pink-500 to-rose-600'}`}>
-                {post.isAnon ? <Ghost size={28} /> : <User size={28} />}
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-5">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-full flex-center text-white font-bold ${post.isAnon ? 'bg-gray-800' : 'bg-black'}`}>
+                {post.isAnon ? <Ghost size={22} /> : <User size={22} />}
               </div>
               <div>
-                <p className="text-2xl font-black">{post.isAnon ? 'Anon' : 'Verified'}</p>
-                <p className="text-gray-400">{post.timeAgo}</p>
+                <p className="text-lg font-bold text-black">{post.isAnon ? 'Anonymous' : 'Verified'}</p>
+                <p className="text-sm text-gray-500">{post.timeAgo}</p>
               </div>
             </div>
-            <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-xl transition"><X size={32} /></button>
+            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
+              <X size={28} className="text-gray-600" />
+            </button>
           </div>
 
-          <p className="text-2xl leading-relaxed mb-8">{post.text}</p>
+          <p className="text-xl leading-relaxed mb-6 text-gray-900">{post.text}</p>
 
-          <div className="flex items-center gap-8 mb-8">
+          <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-200">
             <motion.button
-              whileTap={{ scale: liked ? 1 : 1.5 }}
+              whileTap={{ scale: liked ? 0.9 : 1.2 }}
               onClick={handleLike}
-              className={`flex items-center gap-3 text-2xl font-black ${liked ? 'text-pink-500' : 'text-white/60'}`}
+              className={`flex items-center gap-2 text-lg font-semibold ${liked ? 'text-red-500' : 'text-gray-400'}`}
             >
-              <Heart size={36} fill={liked ? 'currentColor' : 'none'} />
-              <span>{post.likes || 0}</span>
+              <Heart size={28} fill={liked ? 'currentColor' : 'none'} />
+              <span>{(post.likes || 0) + (liked ? 1 : 0)}</span>
             </motion.button>
           </div>
 
-          <div className="space-y-4 mb-6">
-            <h3 className="text-xl font-bold text-cyan-400">The Yap ({post.comments?.length || 0})</h3>
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-black">Comments ({post.comments?.length || 0})</h3>
             {post.comments?.map((c: any, i: number) => (
-              <div key={i} className="bg-white/5 rounded-2xl p-4">
-                <p className="font-bold text-cyan-300">Anon</p>
-                <p>{c.text}</p>
+              <div key={i} className="bg-gray-50 rounded-xl p-3">
+                <p className="font-semibold text-sm text-gray-900">Anonymous</p>
+                <p className="text-gray-700">{c.text}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex gap-3 mt-8">
+          <div className="flex gap-2 mt-5">
             <input
               value={comment}
               onChange={e => setComment(e.target.value)}
-              placeholder="Yap back..."
-              className="flex-1 bg-white/10 rounded-2xl px-6 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Add a comment..."
+              className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black border border-gray-200"
             />
-            <button onClick={handleComment} className="bg-cyan-500 p-4 rounded-2xl hover:scale-110 transition">
-              <Send />
+            <button onClick={handleComment} className="bg-black text-white p-3 rounded-xl hover:bg-gray-800 transition-colors">
+              <Send size={20} />
             </button>
           </div>
         </div>

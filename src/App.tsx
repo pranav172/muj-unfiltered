@@ -16,7 +16,7 @@ function App() {
     signInAnonymously(auth);
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u) {
-        setUser({ uid: u.uid, email: u.email });
+        setUser({ uid: u.uid });
         const snap = await getDoc(doc(db, 'users', u.uid));
         if (!snap.exists()) {
           setShowOnboarding(true);

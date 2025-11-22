@@ -9,26 +9,10 @@
 }
 
 body {
-  background: #000;
-  color: white;
+  background: #ffffff;
+  color: #000000;
 }
 
 @layer components {
   .flex-center { @apply flex items-center justify-center; }
-}
-
-/* Floating orbs background */
-.orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
-  pointer-events: none;
-  animation: float 20s infinite ease-in-out;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  33% { transform: translate(100px, -100px) rotate(120deg); }
-  66% { transform: translate(-80px, 80px) rotate(240deg); }
 }
