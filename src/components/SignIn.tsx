@@ -10,7 +10,6 @@ export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess:
   const [email, setEmail] = useState('');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
-  const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -41,7 +40,6 @@ export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess:
       const userData = userDoc.data();
       
       setQuestion(userData.funQuestion);
-      setUserId(userDoc.id);
       setStep(2);
     } catch (err) {
       console.error('Sign in error:', err);
