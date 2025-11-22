@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-export default function PostModal({ post, onClose, userId }: { post: any; onClose: () => void; userId: string | null }) {
+export default function PostModal({ post, onClose }: { post: any; onClose: () => void }) {
   const [comment, setComment] = useState('');
   const [liked, setLiked] = useState(false);
 

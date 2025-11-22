@@ -1,11 +1,10 @@
-// src/pages/SocialFeed.tsx — FINAL BANGER
+// src/pages/SocialFeed.tsx — FINAL CLEAN VERSION (NO PAYWALL)
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Ghost, User, X, Crown, Flame, Clock } from 'lucide-react';
-import { BAD_WORDS, UPI_ID, PAY_AMOUNT } from '../lib/constants';
+import { Plus, Ghost, User, X, Flame, Clock } from 'lucide-react';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 import EmailGate from '../components/EmailGate';
@@ -17,31 +16,34 @@ export default function SocialFeed() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(true);
-  const [showPaywall, setShowPaywall] = useState(false);
-  const [sortBy, setSortBy] = useState<'latest' | 'hottest'>('latest');
   const [showEmailGate, setShowEmailGate] = useState(true);
+  const [sortBy, setSortBy] = useState<'latest' | 'hottest'>('latest');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
-  // Check if user has email
+  // Check if user already gave email
   useEffect(() => {
     if (user) {
       getDoc(doc(db, 'users', user.uid)).then(snap => {
-        if (snap.exists() && snap.data()?.email) setShowEmailGate(false);
+        if (snap.exists() && snap.data()?.email) {
+          setShowEmailGate(false);
+        }
       });
     }
   }, [user]);
 
-  // Real-time posts
+  // Real-time feed
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, 'posts'), orderBy(sortBy === 'hottest' ? 'likes' : 'createdAt', 'desc'));
+    const q = query(
+      collection(db, 'posts'),
+      orderBy(sortBy === 'hottest' ? 'likes' : 'createdAt', 'desc')
+    );
     const unsub = onSnapshot(q, snap => {
-      const data = snap.docs.map(d => ({
+      setPosts(snap.docs.map(d => ({
         id: d.id,
         ...d.data(),
         timeAgo: timeSince(d.data().createdAt)
-      }));
-      setPosts(data);
+      })));
     });
     return () => unsub();
   }, [sortBy, user]);
@@ -57,26 +59,7 @@ export default function SocialFeed() {
 
   const handlePost = async () => {
     if (!text.trim() || !user) return;
-
-    if (BAD_WORDS.some(w => text.toLowerCase().includes(w))) {
-      alert("Too toxic bestie");
-      return;
-    }
-
-    const userRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userRef);
-    const data = snap.data();
-    const today = new Date().toDateString();
-
-    if (data?.lastPostDate !== today) {
-      await setDoc(userRef, { postsToday: 1, lastPostDate: today }, { merge: true });
-    } else if ((data?.postsToday || 0) >= 3 && !data?.premium) {
-      setShowPaywall(true);
-      return;
-    } else {
-      await updateDoc(userRef, { postsToday: increment(1) });
-    }
-
+    
     await addDoc(collection(db, 'posts'), {
       text: text.trim(),
       isAnon,
@@ -85,14 +68,15 @@ export default function SocialFeed() {
       comments: [],
       createdAt: serverTimestamp()
     });
-
+    
     setText('');
     setShowCreateModal(false);
   };
 
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=MUJ%20Unfiltered&am=${PAY_AMOUNT}&cu=INR`;
-
-  if (showEmailGate) return <EmailGate onComplete={() => setShowEmailGate(false)} />;
+  // EMAIL GATE FIRST
+  if (showEmailGate) {
+    return <EmailGate onComplete={() => setShowEmailGate(false)} />;
+  }
 
   return (
     <>
@@ -211,37 +195,7 @@ export default function SocialFeed() {
           <PostModal
             post={selectedPost}
             onClose={() => setSelectedPost(null)}
-            userId={user?.uid || null}
           />
-        )}
-      </AnimatePresence>
-
-      {/* Paywall */}
-      <AnimatePresence>
-        {showPaywall && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex-center bg-black/90 backdrop-blur-2xl"
-          >
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="glass-hard rounded-3xl p-10 text-center max-w-md border border-white/20 relative">
-              <button
-                onClick={() => setShowPaywall(false)}
-                className="absolute top-4 right-4 hover:bg-white/10 p-2 rounded-xl transition"
-              >
-                <X size={28} />
-              </button>
-              <Crown className="w-24 h-24 mx-auto mb-6 text-yellow-400" />
-              <h2 className="text-4xl font-black mb-4">Yap Limit Reached</h2>
-              <p className="text-xl mb-8">Pay ₹{PAY_AMOUNT} for unlimited yapping today</p>
-              <img src={`https://chart.googleapis.com/chart?chs=350x350&cht=qr&chl=${encodeURIComponent(upiLink)}`} className="mx-auto rounded-2xl mb-6" alt="UPI QR Code" />
-              <a href={upiLink} className="block w-full bg-green-500 hover:bg-green-400 py-5 rounded-2xl font-black text-xl">
-                Pay Now (GPay/PhonePe)
-              </a>
-              <p className="text-sm text-gray-400 mt-4">Refresh after payment → unlimited unlocked</p>
-            </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
     </>
