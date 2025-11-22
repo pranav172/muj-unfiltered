@@ -1,12 +1,13 @@
 // src/App.tsx
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
 import { useStore } from './store/useStore';
 import Header from './components/Header';
 import SocialFeed from './pages/SocialFeed';
 import Onboarding from './components/Onboarding';
+import SignIn from './components/SignIn';
 import LandingPage from './components/LandingPage';
 import Footer from './components/Footer';
 import { cleanupOldPosts } from './lib/cleanupPosts';
@@ -15,18 +16,31 @@ function App() {
   const { setUser } = useStore();
   const [showLanding, setShowLanding] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const [browseMode, setBrowseMode] = useState(false);
-  const [isSignin, setIsSignin] = useState(false);
 
   useEffect(() => {
     // Check if user has already made a choice
     const hasVisited = localStorage.getItem('hasVisited');
     const savedBrowseMode = localStorage.getItem('browseMode');
+    const savedUserId = localStorage.getItem('userId');
     
     if (hasVisited === 'true') {
       setShowLanding(false);
       if (savedBrowseMode === 'true') {
         setBrowseMode(true);
+      }
+      if (savedUserId) {
+        // User was signed in, verify they still exist
+        signInAnonymously(auth).then(() => {
+          getDoc(doc(db, 'users', savedUserId)).then((snap) => {
+            if (!snap.exists()) {
+              // User deleted, clear storage
+              localStorage.removeItem('userId');
+              setShowLanding(true);
+            }
+          });
+        });
       }
     }
   }, []);
@@ -36,25 +50,10 @@ function App() {
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u) {
         setUser({ uid: u.uid });
-        if (!browseMode && isSignin) {
-          // Check if user exists (sign in flow)
-          const snap = await getDoc(doc(db, 'users', u.uid));
-          if (!snap.exists()) {
-            alert('no account found bestie! sign up first 🔐');
-            setShowLanding(true);
-            setIsSignin(false);
-          }
-        } else if (!browseMode) {
-          // Sign up flow - check if needs onboarding
-          const snap = await getDoc(doc(db, 'users', u.uid));
-          if (!snap.exists()) {
-            setShowOnboarding(true);
-          }
-        }
       }
     });
     return () => unsub();
-  }, [setUser, browseMode, isSignin]);
+  }, [setUser]);
 
   // Run cleanup once when app loads
   useEffect(() => {
@@ -82,8 +81,8 @@ function App() {
 
   const handleSignup = () => {
     setBrowseMode(false);
-    setIsSignin(false);
     setShowLanding(false);
+    setShowSignIn(false);
     setShowOnboarding(true);
     localStorage.setItem('hasVisited', 'true');
     localStorage.removeItem('browseMode');
@@ -91,18 +90,35 @@ function App() {
 
   const handleSignin = () => {
     setBrowseMode(false);
-    setIsSignin(true);
     setShowLanding(false);
+    setShowOnboarding(false);
+    setShowSignIn(true);
     localStorage.setItem('hasVisited', 'true');
     localStorage.removeItem('browseMode');
+  };
+
+  const handleSignInSuccess = async (userId: string) => {
+    // Link the anonymous account to this user
+    localStorage.setItem('userId', userId);
+    setShowSignIn(false);
+  };
+
+  const handleBackToLanding = () => {
+    setShowLanding(true);
+    setShowSignIn(false);
+    setShowOnboarding(false);
   };
 
   if (showLanding) {
     return <LandingPage onBrowse={handleBrowse} onSignup={handleSignup} onSignin={handleSignin} />;
   }
 
+  if (showSignIn) {
+    return <SignIn onSuccess={handleSignInSuccess} onBack={handleBackToLanding} />;
+  }
+
   if (showOnboarding && !browseMode) {
-    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
+    return <Onboarding onComplete={() => { setShowOnboarding(false); localStorage.setItem('userId', user!.uid); }} />;
   }
 
   return (
