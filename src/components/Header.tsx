@@ -17,36 +17,36 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-black">
+          <h1 className="text-xl font-semibold text-gray-900">
             muj unfiltered
           </h1>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="bg-gray-100 px-2 py-1.5 rounded-lg flex gap-1">
+          <div className="bg-gray-50 px-2 py-1.5 rounded-xl flex gap-1">
             <button
               onClick={() => setMode('social')}
-              className={`px-5 py-2 rounded-md font-medium text-sm transition-all ${mode === 'social' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'}`}
+              className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${mode === 'social' ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-900'}`}
             >
-              Yap
+              yap
             </button>
             <button
               onClick={handleRosterClick}
-              className="px-5 py-2 rounded-md font-medium text-sm text-gray-600 hover:text-black transition-all"
+              className="px-5 py-2 rounded-lg font-medium text-sm text-gray-500 hover:text-gray-900 transition-all"
             >
-              Roster
+              roster
             </button>
           </div>
 
           <button
             onClick={handleLogout}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all"
-            title="Logout"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-all"
+            title="logout"
           >
-            <LogOut size={20} className="text-gray-600" />
+            <LogOut size={18} className="text-gray-500" />
           </button>
         </div>
       </div>

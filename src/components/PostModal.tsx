@@ -1,6 +1,6 @@
 // src/components/PostModal.tsx
 import { motion } from 'framer-motion';
-import { X, Heart, Send, Ghost, User } from 'lucide-react';
+import { X, Heart, Send, User } from 'lucide-react';
 import { useState } from 'react';
 import { doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -19,7 +19,7 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
     await updateDoc(doc(db, 'posts', post.id), {
       comments: arrayUnion({
         text: comment,
-        author: 'Anon',
+        author: 'anon',
         createdAt: new Date()
       })
     });
@@ -31,51 +31,51 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex-center bg-black/20 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex-center bg-black/10 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, y: 20 }}
+        initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
+        exit={{ scale: 0.95, y: 20 }}
         onClick={e => e.stopPropagation()}
-        className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 shadow-xl"
+        className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-100 shadow-2xl"
       >
         <div className="p-6">
           <div className="flex justify-between items-start mb-5">
             <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-full flex-center text-white font-bold ${post.isAnon ? 'bg-gray-800' : 'bg-black'}`}>
-                {post.isAnon ? <Ghost size={22} /> : <User size={22} />}
+              <div className="w-11 h-11 rounded-full flex-center bg-gray-100 text-gray-600">
+                <User size={20} />
               </div>
               <div>
-                <p className="text-lg font-bold text-black">{post.isAnon ? 'Anonymous' : 'Verified'}</p>
-                <p className="text-sm text-gray-500">{post.timeAgo}</p>
+                <p className="text-base font-semibold text-gray-900">{post.isAnon ? 'anonymous' : 'verified'}</p>
+                <p className="text-sm text-gray-400">{post.timeAgo}</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
-              <X size={28} className="text-gray-600" />
+            <button onClick={onClose} className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors">
+              <X size={24} className="text-gray-400" />
             </button>
           </div>
 
-          <p className="text-xl leading-relaxed mb-6 text-gray-900">{post.text}</p>
+          <p className="text-lg leading-relaxed mb-6 text-gray-700">{post.text}</p>
 
-          <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-200">
+          <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-100">
             <motion.button
               whileTap={{ scale: liked ? 0.9 : 1.2 }}
               onClick={handleLike}
-              className={`flex items-center gap-2 text-lg font-semibold ${liked ? 'text-red-500' : 'text-gray-400'}`}
+              className={`flex items-center gap-2 text-base font-medium transition-colors ${liked ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Heart size={28} fill={liked ? 'currentColor' : 'none'} />
+              <Heart size={24} fill={liked ? 'currentColor' : 'none'} />
               <span>{(post.likes || 0) + (liked ? 1 : 0)}</span>
             </motion.button>
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-base font-bold text-black">Comments ({post.comments?.length || 0})</h3>
+            <h3 className="text-sm font-semibold text-gray-900">comments ({post.comments?.length || 0})</h3>
             {post.comments?.map((c: any, i: number) => (
-              <div key={i} className="bg-gray-50 rounded-xl p-3">
-                <p className="font-semibold text-sm text-gray-900">Anonymous</p>
-                <p className="text-gray-700">{c.text}</p>
+              <div key={i} className="bg-gray-50 rounded-2xl p-4">
+                <p className="font-medium text-sm text-gray-900 mb-1">anonymous</p>
+                <p className="text-gray-600 text-[15px]">{c.text}</p>
               </div>
             ))}
           </div>
@@ -84,11 +84,11 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
             <input
               value={comment}
               onChange={e => setComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black border border-gray-200"
+              placeholder="add a comment..."
+              className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 border border-gray-100 text-[15px]"
             />
-            <button onClick={handleComment} className="bg-black text-white p-3 rounded-xl hover:bg-gray-800 transition-colors">
-              <Send size={20} />
+            <button onClick={handleComment} className="bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-800 transition-colors">
+              <Send size={18} />
             </button>
           </div>
         </div>

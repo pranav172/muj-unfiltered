@@ -1,10 +1,10 @@
-// src/pages/SocialFeed.tsx — MINIMAL WHITE VERSION
+// src/pages/SocialFeed.tsx — SOFT MINIMAL VERSION
 import { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Ghost, User, X } from 'lucide-react';
+import { Plus, User, X } from 'lucide-react';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 
@@ -16,13 +16,9 @@ export default function SocialFeed() {
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(true);
 
-  // Real-time feed
   useEffect(() => {
     if (!user) return;
-    const q = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => {
       setPosts(snap.docs.map(d => ({
         id: d.id,
@@ -61,13 +57,12 @@ export default function SocialFeed() {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 pb-32">
-        {/* Feed */}
         {posts.length === 0 ? (
           <div className="text-center pt-32">
-            <motion.h1 initial={{ scale: 0.9 }} animate={{ scale:1 }} className="text-6xl font-bold text-gray-900 mb-4">
-              No confessions yet
+            <motion.h1 initial={{ scale: 0.95 }} animate={{ scale:1 }} className="text-5xl font-semibold text-gray-900 mb-3">
+              no confessions yet
             </motion.h1>
-            <p className="text-lg text-gray-500">Be the first to share</p>
+            <p className="text-base text-gray-400">be the first to share</p>
           </div>
         ) : (
           <div className="columns-1 md:columns-2 lg:columns-3 gap-4">
@@ -91,7 +86,7 @@ export default function SocialFeed() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowCreateModal(true)}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-black rounded-full flex-center shadow-lg z-40"
+        className="fixed bottom-8 right-8 w-14 h-14 bg-gray-900 rounded-full flex-center shadow-lg hover:shadow-xl transition-shadow z-40"
       >
         <Plus className="w-6 h-6 text-white" />
       </motion.button>
@@ -103,46 +98,46 @@ export default function SocialFeed() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/10 backdrop-blur-sm"
             onClick={() => setShowCreateModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              exit={{ scale: 0.95, y: 20 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-full max-w-lg border border-gray-200 shadow-xl"
+              className="bg-white rounded-3xl p-6 w-full max-w-lg border border-gray-100 shadow-2xl"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-black">New Confession</h2>
-                <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                  <X size={24} className="text-gray-600" />
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-semibold text-gray-900">new confession</h2>
+                <button onClick={() => setShowCreateModal(false)} className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors">
+                  <X size={20} className="text-gray-400" />
                 </button>
               </div>
 
               <textarea
                 value={text}
                 onChange={e => setText(e.target.value)}
-                placeholder="What's on your mind?"
-                className="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-4 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                placeholder="what's on your mind?"
+                className="w-full h-32 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none text-[15px]"
                 maxLength={280}
               />
 
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-between items-center mt-5">
                 <button
                   onClick={() => setIsAnon(!isAnon)}
-                  className={`px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 ${isAnon ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'}`}
+                  className={`px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all ${isAnon ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
                 >
-                  {isAnon ? <Ghost size={18} /> : <User size={18} />}
-                  {isAnon ? 'Anonymous' : 'Show Name'}
+                  <User size={16} />
+                  {isAnon ? 'anonymous' : 'show name'}
                 </button>
 
                 <button
                   onClick={handlePost}
                   disabled={!text.trim()}
-                  className="bg-black text-white px-8 py-2.5 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                  className="bg-gray-900 text-white px-8 py-2.5 rounded-xl font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
                 >
-                  Post
+                  post
                 </button>
               </div>
             </motion.div>

@@ -26,25 +26,10 @@ function App() {
     return () => unsub();
   }, [setUser]);
 
-  // Floating orbs
-  useEffect(() => {
-    const colors = ['#8b5cf6', '#ec4899', '#06b6d4', '#f59e0b'];
-    colors.forEach((color, i) => {
-      const orb = document.createElement('div');
-      orb.className = 'orb';
-      orb.style.background = color;
-      orb.style.width = orb.style.height = Math.random() * 400 + 200 + 'px';
-      orb.style.left = Math.random() * 100 + '%';
-      orb.style.top = Math.random() * 100 + '%';
-      orb.style.animationDelay = i * 5 + 's';
-      document.body.appendChild(orb);
-    });
-  }, []);
-
   if (showOnboarding) return <Onboarding onComplete={() => setShowOnboarding(false)} />;
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-screen bg-[#fafafa] relative">
       <Header />
       <main className="pt-20 pb-32">
         <SocialFeed />
