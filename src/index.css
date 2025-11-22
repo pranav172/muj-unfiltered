@@ -1,7 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
-* {
-  scrollbar-width: thin;
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+@layer components {
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+  .glass { @apply bg-white/5 backdrop-blur-xl border border-white/10; }
+  .glass-hard { @apply bg-white/8 backdrop-blur-2xl border border-white/20; }
+  .neon-glow { @apply shadow-lg shadow-purple-500/20; }
 }

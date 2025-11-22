@@ -12,35 +12,36 @@ function App() {
   const { mode, setUser, setStreak, setRegistered } = useStore();
 
   useEffect(() => {
-    // Auto anonymous login
-    signInAnonymously(auth).catch(() => {});
-
+    signInAnonymously(auth);
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u) {
         setUser({ uid: u.uid });
-
         const userRef = doc(db, 'users', u.uid);
         const snap = await getDoc(userRef);
-
-        // First time user → create profile
-        if (!(await snap).exists()) {
+        if (!snap.exists()) {
           await setDoc(userRef, { streak: 1, createdAt: new Date() }, { merge: true });
           setStreak(1);
         } else {
-          const data = (await snap).data();
+          const data = snap.data();
           setStreak(data?.streak || 1);
           setRegistered(!!data?.isRegistered);
         }
       }
     });
-
     return () => unsub();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-purple-900/20 to-[#0f172a] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0d0b1a] text-white overflow-hidden relative">
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-cyan-900/40" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse delay-1000" />
+      </div>
+
       <Header />
-      <main className="pt-24 pb-24">
+      <main className="pt-24 pb-32 px-4">
         {mode === 'social' ? <SocialFeed /> : <DatingDeck />}
       </main>
     </div>
