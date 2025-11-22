@@ -1,7 +1,7 @@
 // src/App.tsx
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
 import { useStore } from './store/useStore';
 import Header from './components/Header';
@@ -13,14 +13,13 @@ import Footer from './components/Footer';
 import { cleanupOldPosts } from './lib/cleanupPosts';
 
 function App() {
-  const { setUser } = useStore();
+  const { user, setUser } = useStore();
   const [showLanding, setShowLanding] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [browseMode, setBrowseMode] = useState(false);
 
   useEffect(() => {
-    // Check if user has already made a choice
     const hasVisited = localStorage.getItem('hasVisited');
     const savedBrowseMode = localStorage.getItem('browseMode');
     const savedUserId = localStorage.getItem('userId');
@@ -31,11 +30,9 @@ function App() {
         setBrowseMode(true);
       }
       if (savedUserId) {
-        // User was signed in, verify they still exist
         signInAnonymously(auth).then(() => {
           getDoc(doc(db, 'users', savedUserId)).then((snap) => {
             if (!snap.exists()) {
-              // User deleted, clear storage
               localStorage.removeItem('userId');
               setShowLanding(true);
             }
@@ -55,7 +52,6 @@ function App() {
     return () => unsub();
   }, [setUser]);
 
-  // Run cleanup once when app loads
   useEffect(() => {
     const runCleanup = async () => {
       const lastCleanup = localStorage.getItem('lastCleanup');
@@ -98,7 +94,6 @@ function App() {
   };
 
   const handleSignInSuccess = async (userId: string) => {
-    // Link the anonymous account to this user
     localStorage.setItem('userId', userId);
     setShowSignIn(false);
   };
@@ -118,7 +113,7 @@ function App() {
   }
 
   if (showOnboarding && !browseMode) {
-    return <Onboarding onComplete={() => { setShowOnboarding(false); localStorage.setItem('userId', user!.uid); }} />;
+    return <Onboarding onComplete={() => { setShowOnboarding(false); if (user) localStorage.setItem('userId', user.uid); }} />;
   }
 
   return (
