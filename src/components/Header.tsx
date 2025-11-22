@@ -1,24 +1,25 @@
 // src/components/Header.tsx
-import { LogOut } from 'lucide-react';
+import { LogOut, UserPlus } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 
-export default function Header() {
+export default function Header({ browseMode, onSignup }: { browseMode?: boolean; onSignup?: () => void }) {
   const { mode, setMode } = useStore();
 
   const handleRosterClick = () => {
-    alert('yo bestie! devs are cooking something spicy here 👀✨ stay tuned fr fr');
+    alert('yo bestie! devs are cooking something spicy here 👀✨\nstay tuned fr fr');
   };
 
   const handleLogout = async () => {
     await signOut(auth);
+    localStorage.removeItem('hasVisited');
     window.location.reload();
   };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             muj unfiltered
@@ -26,20 +27,30 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="bg-gray-50 px-2 py-1.5 rounded-xl flex gap-1">
+          {browseMode ? (
             <button
-              onClick={() => setMode('social')}
-              className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${mode === 'social' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              onClick={onSignup}
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all flex items-center gap-2"
             >
-              yap
+              <UserPlus size={16} />
+              sign up to post
             </button>
-            <button
-              onClick={handleRosterClick}
-              className="px-5 py-2 rounded-lg font-medium text-sm text-gray-500 hover:text-gray-900 transition-all"
-            >
-              roster
-            </button>
-          </div>
+          ) : (
+            <div className="bg-gray-50 px-2 py-1.5 rounded-xl flex gap-1">
+              <button
+                onClick={() => setMode('social')}
+                className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${mode === 'social' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                yap
+              </button>
+              <button
+                onClick={handleRosterClick}
+                className="px-5 py-2 rounded-lg font-medium text-sm text-gray-500 hover:text-gray-900 transition-all"
+              >
+                roster
+              </button>
+            </div>
+          )}
 
           <button
             onClick={handleLogout}

@@ -26,9 +26,14 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
 
   const handleComment = async () => {
     if (!comment.trim()) return;
+    if (comment.trim().length < 3) {
+      alert('comment too short bestie! minimum 3 characters 💬');
+      return;
+    }
+    
     await updateDoc(doc(db, 'posts', post.id), {
       comments: arrayUnion({
-        text: comment,
+        text: comment.trim(),
         author: 'anon',
         createdAt: new Date()
       })
@@ -58,7 +63,7 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
                 <User size={20} />
               </div>
               <div>
-                <p className="text-base font-semibold text-gray-900">{post.isAnon ? 'anonymous' : 'verified'}</p>
+                <p className="text-base font-semibold text-gray-900">{post.isAnon ? 'anon' : 'verified'}</p>
                 <p className="text-sm text-gray-400">{post.timeAgo}</p>
               </div>
             </div>
@@ -81,10 +86,13 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-900">comments ({post.comments?.length || 0})</h3>
+            <h3 className="text-sm font-semibold text-gray-900">yaps ({post.comments?.length || 0}) 💬</h3>
+            {post.comments?.length === 0 && (
+              <p className="text-sm text-gray-400 italic">no comments yet... be the first to yap back!</p>
+            )}
             {post.comments?.map((c: any, i: number) => (
               <div key={i} className="bg-gray-50 rounded-2xl p-4">
-                <p className="font-medium text-sm text-gray-900 mb-1">anonymous</p>
+                <p className="font-medium text-sm text-gray-900 mb-1">anon</p>
                 <p className="text-gray-600 text-[15px]">{c.text}</p>
               </div>
             ))}
@@ -94,7 +102,8 @@ export default function PostModal({ post, onClose }: { post: any; onClose: () =>
             <input
               value={comment}
               onChange={e => setComment(e.target.value)}
-              placeholder="add a comment..."
+              onKeyDown={e => e.key === 'Enter' && handleComment()}
+              placeholder="yap back... 👀"
               className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 border border-gray-100 text-[15px]"
             />
             <button onClick={handleComment} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3 rounded-2xl hover:shadow-md transition-all">

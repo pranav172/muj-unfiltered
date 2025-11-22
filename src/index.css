@@ -6,8 +6,9 @@
 }
 
 body {
-  background: #ffffff;
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 50%, #fafafa 100%);
   color: #1a1a1a;
+  min-height: 100vh;
 }
 
 @layer components {

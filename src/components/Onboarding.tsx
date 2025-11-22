@@ -4,19 +4,28 @@ import { motion } from 'framer-motion';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
+import { Mail, Shield, Sparkles } from 'lucide-react';
 
 export default function Onboarding({ onComplete }: { onComplete: () => void }) {
-  const [name, setName] = useState('');
-  const [prefersAnon, setPrefersAnon] = useState(true);
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
   const { user } = useStore();
 
   const finish = async () => {
-    if (!name.trim()) return;
+    if (!email.trim()) return;
+    
+    if (!email.endsWith('@muj.manipal.edu')) {
+      alert('yo bestie! only @muj.manipal.edu emails allowed 🔒\nthis is for muj students only fr fr');
+      return;
+    }
+
+    setLoading(true);
     await setDoc(doc(db, 'users', user!.uid), {
-      name: name.trim(),
-      prefersAnon,
+      email: email.trim(),
+      verified: true,
       createdAt: new Date()
     }, { merge: true });
+    setLoading(false);
     onComplete();
   };
 
@@ -24,50 +33,64 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen flex-center flex-col px-8 text-center"
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex-center flex-col px-8 text-center"
     >
-      <motion.h1
-        initial={{ y: -50 }}
-        animate={{ y: 0 }}
-        className="text-6xl font-black mb-4 bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent"
+      <motion.div
+        initial={{ y: -50, scale: 0.9 }}
+        animate={{ y: 0, scale: 1 }}
+        transition={{ type: "spring", duration: 0.8 }}
+        className="max-w-md w-full"
       >
-        muj unfiltered
-      </motion.h1>
-      <p className="text-gray-400 text-lg mb-12">one last step</p>
+        <div className="flex-center mb-6">
+          <Sparkles className="w-16 h-16 text-purple-500" />
+        </div>
 
-      <input
-        type="text"
-        value={name}
-        onChange={e => setName(e.target.value)}
-        placeholder="your name (only first name)"
-        className="w-full max-w-sm px-8 py-5 rounded-2xl bg-white/5 border border-white/10 focus:border-white/30 outline-none text-center text-xl mb-8"
-        autoFocus
-      />
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-3">
+          muj unfiltered
+        </h1>
+        <p className="text-lg text-gray-600 mb-8">last step bestie! 👀</p>
 
-      <div className="flex gap-8 mb-12">
-        <button
-          onClick={() => setPrefersAnon(true)}
-          className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all ${prefersAnon ? 'bg-white/20 border border-white/30' : 'bg-white/5'}`}
-        >
-          stay ghost
-        </button>
-        <button
-          onClick={() => setPrefersAnon(false)}
-          className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all ${!prefersAnon ? 'bg-white/20 border border-white/30' : 'bg-white/5'}`}
-        >
-          show name
-        </button>
-      </div>
+        {/* Info boxes */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100">
+            <Shield className="w-6 h-6 text-purple-500 mx-auto mb-1" />
+            <p className="text-xs font-medium text-gray-700">100% secure</p>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100">
+            <Mail className="w-6 h-6 text-pink-500 mx-auto mb-1" />
+            <p className="text-xs font-medium text-gray-700">stay anon</p>
+          </div>
+        </div>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={finish}
-        disabled={!name.trim()}
-        className="px-12 py-5 bg-white text-black rounded-2xl font-black text-xl disabled:opacity-50"
-      >
-        enter
-      </motion.button>
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 border border-gray-100 shadow-xl">
+          <label className="block text-left mb-2 text-sm font-medium text-gray-700">
+            your muj email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && finish()}
+            placeholder="xyz.123@muj.manipal.edu"
+            className="w-full px-6 py-4 text-base bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400"
+            autoFocus
+          />
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={finish}
+            disabled={loading || !email.trim()}
+            className="w-full mt-6 px-8 py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 text-white rounded-2xl font-bold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transition-all"
+          >
+            {loading ? 'verifying...' : "let's gooo 🚀"}
+          </motion.button>
+
+          <p className="text-xs text-gray-500 mt-4">
+            we only use this to verify you're from muj. your posts stay 100% anonymous no cap 🤫
+          </p>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

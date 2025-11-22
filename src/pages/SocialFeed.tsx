@@ -1,14 +1,14 @@
-// src/pages/SocialFeed.tsx — FIXED LAYOUT & VALIDATION
+// src/pages/SocialFeed.tsx — WITH BROWSE MODE
 import { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, User, X } from 'lucide-react';
+import { Plus, User, X, Eye } from 'lucide-react';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 
-export default function SocialFeed() {
+export default function SocialFeed({ browseMode }: { browseMode?: boolean }) {
   const { user } = useStore();
   const [posts, setPosts] = useState<any[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -50,19 +50,18 @@ export default function SocialFeed() {
   const handlePost = async () => {
     if (!text.trim() || !user) return;
     
-    // Validation
     if (text.trim().length < 10) {
-      alert('confession must be at least 10 characters');
+      alert('confession too short bestie! minimum 10 characters 📝');
       return;
     }
 
-    // Check for spam (same text posted recently)
+    // Check for spam
     const userRef = doc(db, 'users', user.uid);
     const snap = await getDoc(userRef);
     const lastPost = snap.data()?.lastPostText;
     
     if (lastPost === text.trim()) {
-      alert('you already posted this! try something new');
+      alert('you already posted this bestie! try something new 👀');
       return;
     }
     
@@ -75,13 +74,11 @@ export default function SocialFeed() {
       createdAt: serverTimestamp()
     });
 
-    // Save last post to prevent spam
+    const { updateDoc, setDoc } = await import('firebase/firestore');
     await getDoc(userRef).then(async (docSnap) => {
       if (docSnap.exists()) {
-        const { updateDoc } = await import('firebase/firestore');
         await updateDoc(userRef, { lastPostText: text.trim() });
       } else {
-        const { setDoc } = await import('firebase/firestore');
         await setDoc(userRef, { lastPostText: text.trim() });
       }
     });
@@ -92,14 +89,23 @@ export default function SocialFeed() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-6 py-8">
+        {browseMode && (
+          <div className="mb-6 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 rounded-2xl p-4 flex items-center gap-3">
+            <Eye className="w-5 h-5 text-purple-600" />
+            <p className="text-sm text-purple-900">
+              <span className="font-semibold">lurking mode activated</span> — sign up to post your own confessions 👀
+            </p>
+          </div>
+        )}
+
         {posts.length === 0 ? (
           <div className="text-center pt-32">
             <motion.h1 initial={{ scale: 0.95 }} animate={{ scale:1 }} className="text-5xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
               no confessions yet
             </motion.h1>
-            <p className="text-base text-gray-400">be the first to share</p>
+            <p className="text-base text-gray-400">be the first to spill the tea ☕</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -117,19 +123,21 @@ export default function SocialFeed() {
         )}
       </div>
 
-      {/* FAB */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setShowCreateModal(true)}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex-center shadow-lg hover:shadow-xl transition-shadow z-40"
-      >
-        <Plus className="w-6 h-6 text-white" />
-      </motion.button>
+      {/* FAB - Only show when NOT in browse mode */}
+      {!browseMode && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowCreateModal(true)}
+          className="fixed bottom-24 right-8 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex-center shadow-lg hover:shadow-xl transition-shadow z-40"
+        >
+          <Plus className="w-6 h-6 text-white" />
+        </motion.button>
+      )}
 
       {/* Create Post Modal */}
       <AnimatePresence>
-        {showCreateModal && (
+        {showCreateModal && !browseMode && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -145,7 +153,7 @@ export default function SocialFeed() {
               className="bg-white rounded-3xl p-6 w-full max-w-lg border border-gray-100 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-5">
-                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">new confession</h2>
+                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">spill the tea ☕</h2>
                 <button onClick={() => setShowCreateModal(false)} className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors">
                   <X size={20} className="text-gray-400" />
                 </button>
@@ -154,7 +162,7 @@ export default function SocialFeed() {
               <textarea
                 value={text}
                 onChange={handleTextChange}
-                placeholder="what's on your mind? (min 10 characters)"
+                placeholder="what's the vibe today? (min 10 chars) 👀"
                 className="w-full h-32 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-[15px]"
               />
 
@@ -170,7 +178,7 @@ export default function SocialFeed() {
                   className={`px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all ${isAnon ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
                 >
                   <User size={16} />
-                  {isAnon ? 'anonymous' : 'show name'}
+                  {isAnon ? 'anon mode 👻' : 'show email'}
                 </button>
 
                 <button
@@ -178,7 +186,7 @@ export default function SocialFeed() {
                   disabled={!text.trim() || charCount < 10}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-2.5 rounded-xl font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-md transition-all"
                 >
-                  post
+                  post it 🚀
                 </button>
               </div>
             </motion.div>
