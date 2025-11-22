@@ -1,4 +1,4 @@
-// src/components/SignIn.tsx
+// src/components/SignIn.tsx - FIXED VERSION
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -25,10 +25,11 @@ export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess:
     setError('');
 
     try {
-      // Find user by email
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where('email', '==', email.trim().toLowerCase()));
       const snapshot = await getDocs(q);
+
+      console.log('Email search results:', snapshot.size);
 
       if (snapshot.empty) {
         setError('no account found with this email bestie! sign up first 🙈');
@@ -39,11 +40,17 @@ export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess:
       const userDoc = snapshot.docs[0];
       const userData = userDoc.data();
       
+      console.log('User data found:', { 
+        email: userData.email, 
+        hasQuestion: !!userData.funQuestion,
+        hasAnswer: !!userData.funAnswer 
+      });
+      
       setQuestion(userData.funQuestion);
       setStep(2);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign in error:', err);
-      setError('something went wrong... try again?');
+      setError(`error: ${err.message || 'unknown error'}`);
     }
 
     setLoading(false);
@@ -62,26 +69,29 @@ export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess:
       
       if (!snapshot.empty) {
         const userData = snapshot.docs[0].data();
-        const storedAnswer = userData.funAnswer.toLowerCase().trim();
-        const userAnswer = answer.toLowerCase().trim();
+        
+        // Ensure both are lowercase and trimmed
+        const storedAnswer = (userData.funAnswer || '').toString().toLowerCase().trim();
+        const userAnswer = answer.trim().toLowerCase();
 
-        console.log('Stored answer:', storedAnswer);
-        console.log('User answer:', userAnswer);
+        console.log('Comparing answers:');
+        console.log('Stored:', storedAnswer);
+        console.log('User entered:', userAnswer);
         console.log('Match:', storedAnswer === userAnswer);
 
         if (storedAnswer === userAnswer) {
-          // Success - pass the Firebase UID
+          console.log('Success! Logging in...');
           onSuccess(snapshot.docs[0].id);
         } else {
-          setError('wrong answer bestie! try again or sign up fresh 🤔');
+          setError(`wrong answer! you entered: "${userAnswer}", try again 🤔`);
           setAnswer('');
         }
       } else {
         setError('account not found... this is weird 🤨');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign in verification error:', err);
-      setError('something went wrong... try again?');
+      setError(`error: ${err.message || 'something went wrong'}`);
     }
 
     setLoading(false);
@@ -170,6 +180,10 @@ export default function SignIn({ onSuccess, onBack, onAdminClick }: { onSuccess:
                 className="w-full px-6 py-4 text-base bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 placeholder-gray-400"
                 autoFocus
               />
+
+              <p className="text-xs text-gray-500 mt-2 text-left">
+                💡 answers are case-insensitive (Love = love = LOVE)
+              </p>
 
               {error && (
                 <motion.div
