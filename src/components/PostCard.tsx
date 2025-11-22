@@ -1,4 +1,5 @@
 // src/components/PostCard.tsx
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Flag, Trash2, Ghost, User } from 'lucide-react';
 import { doc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
@@ -8,17 +9,18 @@ interface PostCardProps {
   post: any;
   currentUserId: string | null;
   onOpen: (post: any) => void;
-  isLiked: boolean;
-  onLike: () => void;
 }
 
-export default function PostCard({ post, currentUserId, onOpen, isLiked, onLike }: PostCardProps) {
+export default function PostCard({ post, currentUserId, onOpen }: PostCardProps) {
   const isOwner = post.ownerId === currentUserId;
+  const [hasLiked, setHasLiked] = useState(false);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onLike();
-    await updateDoc(doc(db, 'posts', post.id), { likes: increment(1) });
+    setHasLiked(!hasLiked);
+    await updateDoc(doc(db, 'posts', post.id), {
+      likes: increment(hasLiked ? -1 : 1)
+    });
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -35,7 +37,7 @@ export default function PostCard({ post, currentUserId, onOpen, isLiked, onLike 
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
       onClick={() => onOpen(post)}
-      className="glass-hard rounded-3xl p-6 cursor-pointer group relative overflow-hidden border border-white/10 hover:border-purple-400/50 transition-all duration-300"
+      className="bg-white/5 rounded-3xl p-6 cursor-pointer group relative overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300"
     >
       {/* Gradient glow on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -66,17 +68,12 @@ export default function PostCard({ post, currentUserId, onOpen, isLiked, onLike 
 
         <div className="flex items-center gap-6">
           <motion.button
-            whileTap={{ scale: 1.4 }}
+            whileTap={{ scale: hasLiked ? 0.8 : 1.4 }}
             onClick={handleLike}
-            className={`flex items-center gap-2 font-bold text-lg ${isLiked ? 'text-pink-500' : 'text-white/50'} transition-all`}
+            className={`flex items-center gap-2 text-xl font-bold ${hasLiked ? 'text-pink-500' : 'text-white/40'} transition-all`}
           >
-            <motion.div
-              animate={{ scale: isLiked ? [1, 1.3, 1] : 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Heart size={24} fill={isLiked ? 'currentColor' : 'none'} />
-            </motion.div>
-            <span>{post.likes || 0}</span>
+            <Heart size={28} fill={hasLiked ? 'currentColor' : 'none'} />
+            <span>{(post.likes || 0) + (hasLiked ? 1 : 0)}</span>
           </motion.button>
 
           <button className="flex items-center gap-2 text-cyan-400 font-bold text-lg">

@@ -4,7 +4,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, g
 import { db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Ghost, User, X, Flame, Clock } from 'lucide-react';
+import { Plus, Ghost, User, X } from 'lucide-react';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 import EmailGate from '../components/EmailGate';
@@ -17,8 +17,6 @@ export default function SocialFeed() {
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(true);
   const [showEmailGate, setShowEmailGate] = useState(true);
-  const [sortBy, setSortBy] = useState<'latest' | 'hottest'>('latest');
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   // Check if user already gave email
   useEffect(() => {
@@ -36,7 +34,7 @@ export default function SocialFeed() {
     if (!user) return;
     const q = query(
       collection(db, 'posts'),
-      orderBy(sortBy === 'hottest' ? 'likes' : 'createdAt', 'desc')
+      orderBy('createdAt', 'desc')
     );
     const unsub = onSnapshot(q, snap => {
       setPosts(snap.docs.map(d => ({
@@ -46,7 +44,7 @@ export default function SocialFeed() {
       })));
     });
     return () => unsub();
-  }, [sortBy, user]);
+  }, [user]);
 
   const timeSince = (ts: any) => {
     if (!ts) return 'now';
@@ -81,26 +79,6 @@ export default function SocialFeed() {
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 pb-32">
-        {/* Sort Toggle */}
-        <div className="flex justify-center gap-4 my-8">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setSortBy('latest')}
-            className={`px-8 py-3 rounded-full font-black text-lg flex items-center gap-2 ${sortBy === 'latest' ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50' : 'bg-white/10'}`}
-          >
-            <Clock size={20} /> Latest
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setSortBy('hottest')}
-            className={`px-8 py-3 rounded-full font-black text-lg flex items-center gap-2 ${sortBy === 'hottest' ? 'bg-gradient-to-r from-orange-500 to-red-500 shadow-lg shadow-orange-500/50' : 'bg-white/10'}`}
-          >
-            <Flame size={20} /> Hottest
-          </motion.button>
-        </div>
-
         {/* Feed */}
         {posts.length === 0 ? (
           <div className="text-center pt-32">
@@ -118,8 +96,6 @@ export default function SocialFeed() {
                     post={post}
                     currentUserId={user?.uid || null}
                     onOpen={setSelectedPost}
-                    isLiked={likedPosts.has(post.id)}
-                    onLike={() => setLikedPosts(prev => new Set(prev).add(post.id))}
                   />
                 </div>
               ))}
