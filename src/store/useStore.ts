@@ -9,11 +9,11 @@ type User = {
 
 type Store = {
   user: User | null;
-  mode: 'social' | 'dating';
+  mode: 'social' | 'dating' | 'roster';
   streak: number;
   isRegistered: boolean;
   setUser: (user: User | null) => void;
-  setMode: (mode: 'social' | 'dating') => void;
+  setMode: (mode: 'social' | 'dating' | 'roster') => void;
   setStreak: (n: number) => void;
   setRegistered: (b: boolean) => void;
 };

@@ -1,8 +1,7 @@
 // src/App.tsx
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from './lib/firebase';
+import { auth } from './lib/firebase';
 import { useStore } from './store/useStore';
 import Header from './components/Header';
 import SocialFeed from './pages/SocialFeed';
