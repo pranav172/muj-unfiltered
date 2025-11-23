@@ -7,6 +7,7 @@ import { useStore } from './store/useStore';
 import Header from './components/Header';
 import SocialFeed from './pages/SocialFeed';
 import AdminDashboard from './pages/AdminDashboard';
+import RosterMode from './pages/RosterMode';
 import Onboarding from './components/Onboarding';
 import SignIn from './components/SignIn';
 import AdminLogin from './components/AdminLogin';
@@ -15,7 +16,7 @@ import Footer from './components/Footer';
 import { cleanupOldPosts } from './lib/cleanupPosts';
 
 function App() {
-  const { user, setUser } = useStore();
+  const { user, setUser, mode } = useStore();
   const [showLanding, setShowLanding] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
@@ -24,31 +25,11 @@ function App() {
   const [browseMode, setBrowseMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Check admin status but ALWAYS show landing first
   useEffect(() => {
-    const hasVisited = localStorage.getItem('hasVisited');
-    const savedBrowseMode = localStorage.getItem('browseMode');
-    const savedUserId = localStorage.getItem('userId');
     const adminStatus = localStorage.getItem('isAdmin');
-    
     if (adminStatus === 'true') {
       setIsAdmin(true);
-    }
-    
-    if (hasVisited === 'true') {
-      setShowLanding(false);
-      if (savedBrowseMode === 'true') {
-        setBrowseMode(true);
-      }
-      if (savedUserId) {
-        signInAnonymously(auth).then(() => {
-          getDoc(doc(db, 'users', savedUserId)).then((snap) => {
-            if (!snap.exists()) {
-              localStorage.removeItem('userId');
-              setShowLanding(true);
-            }
-          });
-        });
-      }
     }
   }, []);
 
@@ -62,6 +43,7 @@ function App() {
     return () => unsub();
   }, [setUser]);
 
+  // Run cleanup once when app loads
   useEffect(() => {
     const runCleanup = async () => {
       const lastCleanup = localStorage.getItem('lastCleanup');
@@ -157,6 +139,19 @@ function App() {
         <main className="pt-20">
           <AdminDashboard />
         </main>
+      </div>
+    );
+  }
+
+  // Show Roster Mode
+  if (mode === 'roster') {
+    return (
+      <div className="min-h-screen">
+        <Header browseMode={browseMode} onSignup={handleSignup} isAdmin={isAdmin} onDashboardClick={isAdmin ? toggleDashboard : undefined} />
+        <main className="pt-20">
+          <RosterMode />
+        </main>
+        <Footer />
       </div>
     );
   }

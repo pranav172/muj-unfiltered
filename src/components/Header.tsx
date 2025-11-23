@@ -7,10 +7,6 @@ import { signOut } from 'firebase/auth';
 export default function Header({ browseMode, onSignup, isAdmin, onDashboardClick }: { browseMode?: boolean; onSignup?: () => void; isAdmin?: boolean; onDashboardClick?: () => void }) {
   const { mode, setMode } = useStore();
 
-  const handleRosterClick = () => {
-    alert('yo bestie! devs are cooking something spicy here 👀✨\nstay tuned fr fr');
-  };
-
   const handleLogout = async () => {
     await signOut(auth);
     localStorage.removeItem('hasVisited');
@@ -52,8 +48,8 @@ export default function Header({ browseMode, onSignup, isAdmin, onDashboardClick
                 yap
               </button>
               <button
-                onClick={handleRosterClick}
-                className="px-5 py-2 rounded-lg font-medium text-sm text-gray-500 hover:text-gray-900 transition-all"
+                onClick={() => setMode('roster')}
+                className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${mode === 'roster' ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 roster
               </button>
